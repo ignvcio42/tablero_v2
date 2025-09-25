@@ -15,18 +15,8 @@ export const todoRouter = createTRPCRouter({
         userId: ctx.session.user.id,
       }
     });
-    console.log("todos", todos.map(({ id, text, done }) => ({ id, text, done })));
-    return [{
-      id: "fake-id",
-      text: "Fake todo",
-      done: false,
-    },
-    {
-      id: "fake-id-2",
-      text: "Fake todo 2",
-      done: true,
-    },
-    ]
+    return todos.map(({ id, text, done }) => ({ id, text, done }));
+    
   }),
   create: protectedProcedure.input(todoInput).mutation(async ({ ctx, input }) => {
     return ctx.db.todo.create({

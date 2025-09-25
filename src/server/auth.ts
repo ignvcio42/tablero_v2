@@ -56,21 +56,21 @@ export const authOptions: NextAuthOptions = {
     }),
     EmailProvider({
       server: {
-        host: process.env.EMAIL_SERVER || "smtp.gmail.com",
+        host: process.env.EMAIL_SERVER || "http://localhost:3000",
         port: 587,
         auth: {
           user: "apikey",
-          pass: process.env.EMAIL_PASS,
+          pass: process.env.EMAIL_API_KEY,
         },
       },
       from: process.env.EMAIL_FROM || "test@localhost.com",
 
       ...(process.env.NODE_ENV !== "production"
         ? {
-          sendVerificationRequest({ url }) {
-            console.log("LOGIN LINK", url);
-          },
-        }
+            sendVerificationRequest({ url }) {
+              console.log("LOGIN LINK", url);
+            },
+          }
         : {}),
     }),
     /**
