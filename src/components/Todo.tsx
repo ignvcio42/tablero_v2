@@ -1,22 +1,122 @@
-import React from 'react'
-import { api } from '~/utils/api'
-import type { Todo } from '~/types'
-import { Input } from 'postcss'
+import React, { useState } from "react";
+import { api } from "~/utils/api";
+import type { Todo } from "~/types";
+import { Input } from "postcss";
+import toast from "react-hot-toast";
 
 type TodoProps = {
-    todo: Todo
-}
+  todo: Todo;
+};
 
 export default function Todo({ todo }: TodoProps) {
-    const { id, text, done } = todo
-    return (
-        <div className='flex gap-4 items-center justify-between py-2'>
-            <div className='flex gap-2 items-center'>
-                <input placeholder="Input component" className='cursor-pointer w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800' type='checkbox' name='done' id='done' checked={done} />
-                <label htmlFor="done" className={'cursor-pointer'}>{text}</label>
-            </div>
+  const { id, text, done } = todo;
 
-            <button className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-2 py-1 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'>Delete</button>
-        </div>
-    )
+  const utils = api.useUtils();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [newText, setNewText] = useState(text);
+
+  const updateMutation = api.todo.update.useMutation({
+    onMutate: (inputEnviado) => {
+      setIsEditing(false);
+      const optimisticUpdate = utils.todo.all.getData();
+
+      //   console.log({ inputEnviado });
+
+      if (optimisticUpdate) {
+        const todosActualizados = optimisticUpdate.map((todo) => {
+          if (todo.id !== inputEnviado.id) {
+            return todo;
+          }
+
+          return {
+            ...todo,
+            text: inputEnviado.newTitle,
+          };
+        });
+
+        console.log({ todosActualizados });
+
+        utils.todo.all.setData(undefined, todosActualizados);
+      }
+    },
+    onSuccess: async (dataDevueltaPorElServidor) => {
+      //   await utils.todo.all.refetch();
+    },
+    onError: async (errorDevueltoPorElServidor) => {
+      toast.error(errorDevueltoPorElServidor.message);
+      console.log({ errorDevueltoPorElServidor });
+      await utils.todo.all.invalidate();
+      //   console.log("onError");
+    },
+    onSettled: () => {
+      console.log("onSettled");
+    },
+  });
+
+  return (
+    <div className="flex items-center justify-between gap-4 py-2">
+      {!isEditing ? (
+        <>
+          <div className="flex flex-1 items-center gap-2">
+            <input
+              placeholder="Input component"
+              className="focus:ring-3 h-4 w-4 cursor-pointer rounded border border-gray-300 bg-gray-50 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+              type="checkbox"
+              name="done"
+              id="done"
+              checked={done}
+            />
+            <label htmlFor="done" className={"cursor-pointer"}>
+              {text}
+            </label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              onClick={() => {
+                setIsEditing(true);
+                setNewText(text);
+              }}
+            >
+              Editar
+            </button>
+            <button className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+              Delete
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <input
+            placeholder="Input component"
+            className="focus:ring-3 w-full cursor-pointer rounded border border-gray-300 bg-gray-50 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+            type="text"
+            name="text"
+            id="text"
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+          />
+          <button
+            className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            onClick={() => {
+              setIsEditing(false);
+              setNewText(text);
+            }}
+          >
+            Cancelar
+          </button>
+          <button
+            className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            onClick={() => {
+              updateMutation.mutate({ id: id, newTitle: newText });
+            }}
+          >
+            Guardar
+          </button>
+        </>
+      )}
+    </div>
+  );
 }

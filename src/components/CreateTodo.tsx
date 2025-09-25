@@ -7,15 +7,23 @@ import toast from 'react-hot-toast'
 export default function CreateTodo() {
     const [newTodo, setNewTodo] = useState('')
 
-    const trpc = api.useContext()
+    const utils = api.useContext()
 
     const { mutate } = api.todo.create.useMutation({
+        onMutate: () => {
+            // SE ENVIA LA PETICION AL SERVIDOR
+
+        },
         onSuccess: () => {
             setNewTodo('')
             toast.success('Todo created successfully')
         },
+        onError: () => {
+
+        },
+
         onSettled: async () => {
-            await trpc.todo.all.invalidate()
+            await utils.todo.all.refetch()
         }
     })
     return (
