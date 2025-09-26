@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { api } from "~/utils/api";
 import type { Todo } from "~/types";
-import { Input } from "postcss";
-import toast from "react-hot-toast";
 import { notifications } from '@mantine/notifications'
 import { IconCheck, IconLoader, IconX } from '@tabler/icons-react'
 import { Button, Checkbox, Group, TextInput, Modal, Textarea } from '@mantine/core';
@@ -136,6 +134,62 @@ export default function Todo({ todo }: TodoProps) {
     },
   })
 
+  // Aqui esta la mutacion para toggle el todo
+  const toggleMutation = api.todo.toggle.useMutation({
+    onMutate: (inputEnviado) => {
+      const optimisticUpdate = utils.todo.all.getData();
+      
+      const id = notifications.show({
+        loading: true,
+        title: 'Actualizando estado...',
+        message: 'El estado de la tarea se está actualizando',
+        autoClose: false,
+        withCloseButton: false,
+      });
+      
+      if (optimisticUpdate) {
+        const todosActualizados = optimisticUpdate.map((todo) => {
+          if (todo.id !== inputEnviado.id) {
+            return todo;
+          }
+          return {
+            ...todo,
+            done: inputEnviado.done,
+          };
+        });
+        utils.todo.all.setData(undefined, todosActualizados);
+      }
+      
+      return { notificationId: id };
+    },
+    onSuccess: (dataDevueltaPorElServidor, variables, context) => {
+      notifications.update({
+        id: context?.notificationId,
+        color: 'teal',
+        title: '¡Estado actualizado!',
+        message: 'El estado de la tarea se ha actualizado exitosamente',
+        icon: <IconCheck size={18} />,
+        loading: false,
+        autoClose: 3000,
+      });
+    },
+    onError: (errorDevueltoPorElServidor, variables, context) => {
+      notifications.update({
+        id: context?.notificationId,
+        color: 'red',
+        title: 'Error al actualizar',
+        message: errorDevueltoPorElServidor.message || 'Ocurrió un error inesperado',
+        icon: <IconX size={18} />,
+        loading: false,
+        autoClose: 4000,
+      });
+    },
+    onSettled: async () => {
+      await utils.todo.all.refetch();
+    },
+  });
+
+
   // Aqui esta el formulario para actualizar el todo
   const form = useForm({
     initialValues: {
@@ -167,6 +221,7 @@ export default function Todo({ todo }: TodoProps) {
             name="done"
             id="done"
             checked={done}
+            onChange={() => toggleMutation.mutate({ id: id, done: !done })} 
           />
           <div className="flex flex-col">
             <label htmlFor="done" className={"cursor-pointer font-medium"}>

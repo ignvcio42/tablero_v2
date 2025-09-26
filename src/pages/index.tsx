@@ -7,7 +7,6 @@ import { Button, Divider } from '@mantine/core';
 import Todos from "~/components/Todos";
 import CreateTodo from "~/components/CreateTodo";
 import '@mantine/core/styles.css';
-// ‼️ import notifications styles after core package styles
 import '@mantine/notifications/styles.css';
 
 export default function Home() {
@@ -25,7 +24,7 @@ export default function Home() {
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           {
             sessionData && (<div className="grid grid-cols-1 gap-4 md:gap-8">
-              <div className="flex flex-col gap-4 rounded-xl bg-white/10 p-8 px-16 text-white hover:bg-white/20">
+              <div className="flex flex-col gap-4 rounded-xl bg-white/10 p-8 px-16 text-white ">
                 <h3 className="text-xl font-bold text-center">To do list</h3>
                 <Todos />
                 <CreateTodo />
@@ -46,7 +45,7 @@ export default function Home() {
               <p className="text-center text-xl text-white">
                 {sessionData && <span>Logged in as {sessionData.user?.email}</span>}
               </p>
-              <button className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" onClick={sessionData ? () => void signOut() : () => void signIn()}> {sessionData ? "Sign out" : "Sign in"}</button>
+              <Button variant="filled" color="blue" radius="lg" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" onClick={sessionData ? () => void signOut() : () => void signIn()}> {sessionData ? "Sign out" : "Sign in"}</Button>
             </div>
             <div
               className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
