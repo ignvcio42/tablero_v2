@@ -266,7 +266,10 @@ export default function Todo({ todo }: TodoProps) {
       </div>
 
       {/* Modal Editar */}
-      <Modal opened={opened} onClose={close} title="Editar Tarea" centered>
+      <Modal opened={opened} onClose={close} title="Editar Tarea" centered overlayProps={{
+        backgroundOpacity: 0.55,
+        blur: 3,
+      }}>
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <TextInput
             label="Título"
@@ -296,7 +299,10 @@ export default function Todo({ todo }: TodoProps) {
       </Modal>
 
       {/* Modal Delete */}
-      <Modal opened={openedDelete} onClose={closeDelete} title="Eliminar Tarea" centered>
+      <Modal opened={openedDelete} onClose={closeDelete} title="Eliminar Tarea" centered overlayProps={{
+        backgroundOpacity: 0.55,
+        blur: 3,
+      }}>
         <p>¿Estás seguro de querer eliminar esta tarea?</p>
         <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={closeDelete}>
