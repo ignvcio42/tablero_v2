@@ -1,9 +1,7 @@
-import { signIn, signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
-import Link from "next/link";
 
 import { api } from "~/utils/api";
-import { Button, Divider } from '@mantine/core';
 import Todos from "~/components/Todos";
 import CreateTodo from "~/components/CreateTodo";
 import '@mantine/core/styles.css';
@@ -23,41 +21,24 @@ export default function Home() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           {
-            sessionData && (<div className="grid grid-cols-1 gap-4 md:gap-8">
-              <div className="flex flex-col gap-4 rounded-xl bg-white/10 p-8 px-16 text-white ">
-                <h3 className="text-xl font-bold text-center">To do list</h3>
-                <Todos />
-                <CreateTodo />
-              </div>
-            </div>)
-          }
-          <div className="grid grid-cols-1 gap-4">
-            {
-              !sessionData && (
-                <div>
-                  <h1 className="text-2xl font-bold text-center text-white">Inicia sesion</h1>
+            sessionData && (
+              <div className="grid grid-cols-1 gap-4 md:gap-8">
+                <div className="flex flex-col gap-4 rounded-xl bg-white/10 p-8 px-16 text-white">
+                  <h3 className="text-xl font-bold text-center">To do list</h3>
+                  <Todos />
+                  <CreateTodo />
                 </div>
-              )
-            }
-            <div
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            >
-              <p className="text-center text-xl text-white">
-                {sessionData && <span>Logged in as {sessionData.user?.email}</span>}
-              </p>
-              <Button variant="filled" color="blue" radius="lg" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" onClick={sessionData ? () => void signOut() : () => void signIn()}> {sessionData ? "Sign out" : "Sign in"}</Button>
-            </div>
-            <div
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-            </div>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p>
-          </div>
+              </div>
+            )
+          }
+          {
+            !sessionData && (
+              <div className="text-center">
+                <h1 className="text-4xl font-bold text-white mb-4">Bienvenido a Todo App</h1>
+                <p className="text-xl text-white/80 mb-8">Inicia sesión para comenzar a gestionar tus tareas</p>
+              </div>
+            )
+          }
         </div>
       </main>
     </>

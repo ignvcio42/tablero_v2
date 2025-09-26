@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { type AppType } from "next/app";
 
 import { api } from "~/utils/api";
+import Navbar from "~/components/Navbar";
 
 import "~/styles/globals.css";
 
@@ -24,13 +25,14 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <MantineProvider theme={theme}>
-      <Notifications />
-      <div className={GeistSans.className}>
-        <Component {...pageProps} />
-        <Toaster />
-      </div>
-        </MantineProvider>
+      <MantineProvider defaultColorScheme="dark">
+        <Notifications />
+        <div className={GeistSans.className}>
+          <Navbar />
+          <Component {...pageProps} />
+          <Toaster />
+        </div>
+      </MantineProvider>
     </SessionProvider>
   );
 };

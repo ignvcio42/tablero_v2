@@ -87,7 +87,7 @@ export default function Todo({ todo }: TodoProps) {
   const deleteMutation = api.todo.delete.useMutation({
     onMutate: (inputEnviado) => {
       const optimisticUpdate = utils.todo.all.getData();
-      
+
       // Mostrar notificación de carga
       const id = notifications.show({
         loading: true,
@@ -96,12 +96,12 @@ export default function Todo({ todo }: TodoProps) {
         autoClose: false,
         withCloseButton: false,
       });
-      
+
       if (optimisticUpdate) {
         const todosActualizados = optimisticUpdate.filter((todo) => todo.id !== inputEnviado);
         utils.todo.all.setData(undefined, todosActualizados);
       }
-      
+
       return { notificationId: id };
     },
     onSuccess: (dataDevueltaPorElServidor, variables, context) => {
@@ -138,7 +138,7 @@ export default function Todo({ todo }: TodoProps) {
   const toggleMutation = api.todo.toggle.useMutation({
     onMutate: (inputEnviado) => {
       const optimisticUpdate = utils.todo.all.getData();
-      
+
       const id = notifications.show({
         loading: true,
         title: 'Actualizando estado...',
@@ -146,7 +146,7 @@ export default function Todo({ todo }: TodoProps) {
         autoClose: false,
         withCloseButton: false,
       });
-      
+
       if (optimisticUpdate) {
         const todosActualizados = optimisticUpdate.map((todo) => {
           if (todo.id !== inputEnviado.id) {
@@ -159,7 +159,7 @@ export default function Todo({ todo }: TodoProps) {
         });
         utils.todo.all.setData(undefined, todosActualizados);
       }
-      
+
       return { notificationId: id };
     },
     onSuccess: (dataDevueltaPorElServidor, variables, context) => {
@@ -212,61 +212,73 @@ export default function Todo({ todo }: TodoProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-4 py-2">
-        <div className="flex flex-1 items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 py-3">
+        <div className="flex flex-1 items-start gap-3">
           <input
-            placeholder="Input component"
-            className="focus:ring-3 h-4 w-4 cursor-pointer rounded border border-gray-300 bg-gray-50 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-            type="checkbox"
-            name="done"
             id="done"
+            name="done"
+            type="checkbox"
             checked={done}
-            onChange={() => toggleMutation.mutate({ id: id, done: !done })} 
+            onChange={() => toggleMutation.mutate({ id, done: !done })}
+            className="h-5 w-5 sm:h-4 sm:w-4 cursor-pointer rounded border border-gray-300 bg-gray-50
+                       focus:ring-blue-300 focus:ring-2 dark:border-gray-600 dark:bg-gray-700
+                       dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+            aria-label="Marcar como hecha"
           />
-          <div className="flex flex-col">
-            <label htmlFor="done" className={"cursor-pointer font-medium"}>
+
+          <div className="min-w-0 flex-1">
+            <label
+              htmlFor="done"
+              className="block cursor-pointer font-bold text-gray-200 break-words"
+            >
               {text}
             </label>
+
             {description && (
-              <p className="text-sm text-gray-300 dark:text-gray-400 mt-1">
+              <p className="mt-1 text-sm text-gray-100 break-words">
                 {description}
               </p>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="filled" color="indigo" radius="lg"
-            className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        <div className="flex w-full sm:w-auto items-center gap-2 sm:gap-3">
+          <Button
+            variant="filled"
+            color="indigo"
+            radius="lg"
             onClick={open}
+            className="w-full sm:w-auto shrink-0 px-3 py-2 text-sm"
           >
             Editar
           </Button>
-          <Button variant="filled" color="red" radius="lg"
-            className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            // onClick={() => {
-            //   deleteMutation.mutate(id);
-            // }}
+
+          <Button
+            variant="filled"
+            color="red"
+            radius="lg"
             onClick={openDelete}
+            className="w-full sm:w-auto shrink-0 px-3 py-2 text-sm"
           >
             Delete
           </Button>
         </div>
       </div>
 
+      {/* Modal Editar */}
       <Modal opened={opened} onClose={close} title="Editar Tarea" centered>
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <TextInput
             label="Título"
             placeholder="Título de la tarea"
-            {...form.getInputProps('text')}
+            {...form.getInputProps("text")}
             mb="md"
           />
 
           <Textarea
             label="Descripción"
             placeholder="Descripción de la tarea (opcional)"
-            {...form.getInputProps('description')}
+            {...form.getInputProps("description")}
             mb="md"
             minRows={3}
             maxRows={6}
@@ -282,15 +294,17 @@ export default function Todo({ todo }: TodoProps) {
           </Group>
         </form>
       </Modal>
+
+      {/* Modal Delete */}
       <Modal opened={openedDelete} onClose={closeDelete} title="Eliminar Tarea" centered>
         <p>¿Estás seguro de querer eliminar esta tarea?</p>
         <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={closeDelete}>
             Cancelar
           </Button>
-          <Button 
-            variant="filled" 
-            color="red" 
+          <Button
+            variant="filled"
+            color="red"
             onClick={() => {
               deleteMutation.mutate(id);
               closeDelete();
