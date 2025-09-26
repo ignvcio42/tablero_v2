@@ -9,7 +9,6 @@ import '@mantine/notifications/styles.css';
 
 export default function Home() {
   const { data: sessionData } = useSession();
-  const hello = api.post.hello.useQuery({ text: "from tRPC" });
 
   return (
     <>
