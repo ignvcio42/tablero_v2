@@ -56,19 +56,19 @@ export const authOptions: NextAuthOptions = {
     }),
     EmailProvider({
       server: {
-        host: process.env.EMAIL_SERVER || "http://localhost:3000",
-        port: 587,
+        host: process.env.EMAIL_SERVER!,          // "in-v3.mailjet.com"
+        port: Number(process.env.EMAIL_PORT) || 587,
+        secure: false,                            // 587 = STARTTLS
         auth: {
-          user: "apikey",
-          pass: process.env.EMAIL_API_KEY,
+          user: process.env.EMAIL_USER!,          // API KEY
+          pass: process.env.EMAIL_PASS!,          // SECRET KEY
         },
       },
-      from: process.env.EMAIL_FROM || "test@localhost.com",
-
+      from: process.env.EMAIL_FROM,               // debe ser el sender verificado
       ...(process.env.NODE_ENV !== "production"
         ? {
-            sendVerificationRequest({ url }) {
-              console.log("LOGIN LINK", url);
+            sendVerificationRequest({ url, identifier }) {
+              console.log(`LOGIN LINK for ${identifier}: ${url}`);
             },
           }
         : {}),
