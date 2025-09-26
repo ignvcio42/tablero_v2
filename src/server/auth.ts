@@ -61,7 +61,7 @@ export const authOptions: NextAuthOptions = {
         secure: false,                            // 587 = STARTTLS
         auth: {
           user: process.env.EMAIL_USER!,          // API KEY
-          pass: process.env.EMAIL_PASS!,          // SECRET KEY
+          pass: process.env.EMAIL_API_KEY!,          // SECRET KEY
         },
       },
       from: process.env.EMAIL_FROM,               // debe ser el sender verificado

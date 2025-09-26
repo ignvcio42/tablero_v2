@@ -57,7 +57,7 @@ export const env = createEnv({
     EMAIL_FROM: process.env.EMAIL_FROM,
     EMAIL_SERVER: process.env.EMAIL_SERVER,
     EMAIL_USER: process.env.EMAIL_USER,
-    EMAIL_PASS: process.env.EMAIL_PASS,
+    EMAIL_PASS: process.env.EMAIL_API_KEY,
     EMAIL_PORT: process.env.EMAIL_PORT,
   },
   /**
