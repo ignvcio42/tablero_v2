@@ -8,6 +8,7 @@ import {
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
+// Aqui estan los metodos para los todos
 export const todoRouter = createTRPCRouter({
   all: protectedProcedure.query(async ({ ctx }) => {
     const todos = await ctx.db.todo.findMany({
@@ -15,14 +16,19 @@ export const todoRouter = createTRPCRouter({
         userId: ctx.session.user.id,
       },
     });
-    return todos.map(({ id, text, done }) => ({ id, text, done }));
+    return todos.map(({ id, text, description, done }) => ({ id, text, description, done }));
   }),
   create: protectedProcedure
     .input(todoInput)
     .mutation(async ({ ctx, input }) => {
+
+      // esperar 5 segundos
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
       return ctx.db.todo.create({
         data: {
-          text: input,
+          text: input.text,
+          description: input.description,
           user: {
             connect: {
               id: ctx.session.user.id,
@@ -36,6 +42,7 @@ export const todoRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         newTitle: z.string(),
+        description: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -69,6 +76,7 @@ export const todoRouter = createTRPCRouter({
         },
         data: {
           text: input.newTitle,
+          description: input.description,
         },
       });
 
@@ -77,6 +85,8 @@ export const todoRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
+      // esperar 5 segundos
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       return ctx.db.todo.delete({
         where: {
           id: input,

@@ -3,25 +3,39 @@ import { api } from "~/utils/api";
 import type { Todo } from "~/types";
 import { Input } from "postcss";
 import toast from "react-hot-toast";
-
+import { notifications } from '@mantine/notifications'
+import { IconCheck, IconLoader, IconX } from '@tabler/icons-react'
+import { Button, Checkbox, Group, TextInput, Modal, Textarea } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { useDisclosure } from '@mantine/hooks';
+// Aqui estan los todos para editar y eliminar
 type TodoProps = {
   todo: Todo;
 };
 
 export default function Todo({ todo }: TodoProps) {
-  const { id, text, done } = todo;
+  const { id, text, description, done } = todo;
 
   const utils = api.useUtils();
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [newText, setNewText] = useState(text);
+  const [opened, { open, close }] = useDisclosure(false);
+  // modal confirmacion para eliminar el todo
+  const [openedDelete, { open: openDelete, close: closeDelete }] = useDisclosure(false);
 
+  // Aqui esta la mutacion para actualizar el todo
   const updateMutation = api.todo.update.useMutation({
     onMutate: (inputEnviado) => {
-      setIsEditing(false);
+      close();
       const optimisticUpdate = utils.todo.all.getData();
 
-      //   console.log({ inputEnviado });
+      // Mostrar notificación de carga
+      const id = notifications.show({
+        loading: true,
+        title: 'Actualizando tarea...',
+        message: 'Tu tarea se está actualizando',
+        autoClose: false,
+        withCloseButton: false,
+      });
 
       if (optimisticUpdate) {
         const todosActualizados = optimisticUpdate.map((todo) => {
@@ -32,91 +46,205 @@ export default function Todo({ todo }: TodoProps) {
           return {
             ...todo,
             text: inputEnviado.newTitle,
+            description: inputEnviado.description || null,
           };
         });
 
-        console.log({ todosActualizados });
-
         utils.todo.all.setData(undefined, todosActualizados);
       }
+
+      return { notificationId: id };
     },
-    onSuccess: async (dataDevueltaPorElServidor) => {
-      //   await utils.todo.all.refetch();
+    onSuccess: async (dataDevueltaPorElServidor, variables, context) => {
+      // Actualizar notificación a éxito
+      notifications.update({
+        id: context?.notificationId,
+        color: 'teal',
+        title: '¡Tarea actualizada!',
+        message: 'Tu tarea se ha actualizado exitosamente',
+        icon: <IconCheck size={18} />,
+        loading: false,
+        autoClose: 3000,
+      });
     },
-    onError: async (errorDevueltoPorElServidor) => {
-      toast.error(errorDevueltoPorElServidor.message);
-      console.log({ errorDevueltoPorElServidor });
+    onError: async (errorDevueltoPorElServidor, variables, context) => {
+      // Actualizar notificación a error
+      notifications.update({
+        id: context?.notificationId,
+        color: 'red',
+        title: 'Error al actualizar',
+        message: errorDevueltoPorElServidor.message || 'Ocurrió un error inesperado',
+        icon: <IconX size={18} />,
+        loading: false,
+        autoClose: 4000,
+      });
       await utils.todo.all.invalidate();
-      //   console.log("onError");
     },
     onSettled: () => {
       console.log("onSettled");
     },
   });
 
-  return (
-    <div className="flex items-center justify-between gap-4 py-2">
-      {!isEditing ? (
-        <>
-          <div className="flex flex-1 items-center gap-2">
-            <input
-              placeholder="Input component"
-              className="focus:ring-3 h-4 w-4 cursor-pointer rounded border border-gray-300 bg-gray-50 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-              type="checkbox"
-              name="done"
-              id="done"
-              checked={done}
-            />
-            <label htmlFor="done" className={"cursor-pointer"}>
-              {text}
-            </label>
-          </div>
+  // Aqui esta la mutacion para eliminar el todo
+  const deleteMutation = api.todo.delete.useMutation({
+    onMutate: (inputEnviado) => {
+      const optimisticUpdate = utils.todo.all.getData();
+      
+      // Mostrar notificación de carga
+      const id = notifications.show({
+        loading: true,
+        title: 'Eliminando tarea...',
+        message: 'Tu tarea se está eliminando',
+        autoClose: false,
+        withCloseButton: false,
+      });
+      
+      if (optimisticUpdate) {
+        const todosActualizados = optimisticUpdate.filter((todo) => todo.id !== inputEnviado);
+        utils.todo.all.setData(undefined, todosActualizados);
+      }
+      
+      return { notificationId: id };
+    },
+    onSuccess: (dataDevueltaPorElServidor, variables, context) => {
+      // Actualizar notificación a éxito
+      notifications.update({
+        id: context?.notificationId,
+        color: 'teal',
+        title: '¡Tarea eliminada!',
+        message: 'Tu tarea se ha eliminado exitosamente',
+        icon: <IconCheck size={18} />,
+        loading: false,
+        autoClose: 3000,
+      });
+    },
+    onError: (errorDevueltoPorElServidor, variables, context) => {
+      // Actualizar notificación a error
+      notifications.update({
+        id: context?.notificationId,
+        color: 'red',
+        title: 'Error al eliminar',
+        message: errorDevueltoPorElServidor.message || 'Ocurrió un error inesperado',
+        icon: <IconX size={18} />,
+        loading: false,
+        autoClose: 4000,
+      });
+      utils.todo.all.invalidate();
+    },
+    onSettled: () => {
+      console.log("onSettled");
+    },
+  })
 
-          <div className="flex items-center gap-2">
-            <button
-              className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              onClick={() => {
-                setIsEditing(true);
-                setNewText(text);
-              }}
-            >
-              Editar
-            </button>
-            <button className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-              Delete
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
+  // Aqui esta el formulario para actualizar el todo
+  const form = useForm({
+    initialValues: {
+      text: text,
+      description: description || '',
+    },
+    validate: {
+      text: (value) => (value.length < 1 ? 'El título es requerido' : null),
+      description: (value) => (value && value.length > 200 ? 'La descripción no puede exceder 200 caracteres' : null),
+    },
+  });
+
+  const handleSubmit = (values: typeof form.values) => {
+    updateMutation.mutate({
+      id: id,
+      newTitle: values.text,
+      description: values.description || undefined
+    });
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between gap-4 py-2">
+        <div className="flex flex-1 items-center gap-2">
           <input
             placeholder="Input component"
-            className="focus:ring-3 w-full cursor-pointer rounded border border-gray-300 bg-gray-50 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-            type="text"
-            name="text"
-            id="text"
-            value={newText}
-            onChange={(e) => setNewText(e.target.value)}
+            className="focus:ring-3 h-4 w-4 cursor-pointer rounded border border-gray-300 bg-gray-50 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+            type="checkbox"
+            name="done"
+            id="done"
+            checked={done}
           />
-          <button
+          <div className="flex flex-col">
+            <label htmlFor="done" className={"cursor-pointer font-medium"}>
+              {text}
+            </label>
+            {description && (
+              <p className="text-sm text-gray-300 dark:text-gray-400 mt-1">
+                {description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button variant="filled" color="indigo" radius="lg"
             className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            onClick={() => {
-              setIsEditing(false);
-              setNewText(text);
-            }}
+            onClick={open}
           >
+            Editar
+          </Button>
+          <Button variant="filled" color="red" radius="lg"
+            className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            // onClick={() => {
+            //   deleteMutation.mutate(id);
+            // }}
+            onClick={openDelete}
+          >
+            Delete
+          </Button>
+        </div>
+      </div>
+
+      <Modal opened={opened} onClose={close} title="Editar Tarea" centered>
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <TextInput
+            label="Título"
+            placeholder="Título de la tarea"
+            {...form.getInputProps('text')}
+            mb="md"
+          />
+
+          <Textarea
+            label="Descripción"
+            placeholder="Descripción de la tarea (opcional)"
+            {...form.getInputProps('description')}
+            mb="md"
+            minRows={3}
+            maxRows={6}
+          />
+
+          <Group justify="flex-end" mt="md">
+            <Button variant="outline" onClick={close}>
+              Cancelar
+            </Button>
+            <Button type="submit" loading={updateMutation.isPending}>
+              Guardar
+            </Button>
+          </Group>
+        </form>
+      </Modal>
+      <Modal opened={openedDelete} onClose={closeDelete} title="Eliminar Tarea" centered>
+        <p>¿Estás seguro de querer eliminar esta tarea?</p>
+        <Group justify="flex-end" mt="md">
+          <Button variant="outline" onClick={closeDelete}>
             Cancelar
-          </button>
-          <button
-            className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          </Button>
+          <Button 
+            variant="filled" 
+            color="red" 
             onClick={() => {
-              updateMutation.mutate({ id: id, newTitle: newText });
+              deleteMutation.mutate(id);
+              closeDelete();
             }}
           >
-            Guardar
-          </button>
-        </>
-      )}
-    </div>
+            Eliminar
+          </Button>
+        </Group>
+      </Modal>
+    </>
   );
 }

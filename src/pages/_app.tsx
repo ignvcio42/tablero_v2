@@ -8,6 +8,7 @@ import { api } from "~/utils/api";
 import "~/styles/globals.css";
 
 import '@mantine/core/styles.css';
+import { Notifications } from '@mantine/notifications';
 
 import type { AppProps } from 'next/app';
 import { createTheme, MantineProvider } from '@mantine/core';
@@ -24,6 +25,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <MantineProvider theme={theme}>
+      <Notifications />
       <div className={GeistSans.className}>
         <Component {...pageProps} />
         <Toaster />

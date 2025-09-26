@@ -6,6 +6,9 @@ import { api } from "~/utils/api";
 import { Button, Divider } from '@mantine/core';
 import Todos from "~/components/Todos";
 import CreateTodo from "~/components/CreateTodo";
+import '@mantine/core/styles.css';
+// ‼️ import notifications styles after core package styles
+import '@mantine/notifications/styles.css';
 
 export default function Home() {
   const { data: sessionData } = useSession();
@@ -22,7 +25,7 @@ export default function Home() {
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           {
             sessionData && (<div className="grid grid-cols-1 gap-4 md:gap-8">
-              <div className="flex flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20">
+              <div className="flex flex-col gap-4 rounded-xl bg-white/10 p-8 px-16 text-white hover:bg-white/20">
                 <h3 className="text-xl font-bold text-center">To do list</h3>
                 <Todos />
                 <CreateTodo />
@@ -30,6 +33,13 @@ export default function Home() {
             </div>)
           }
           <div className="grid grid-cols-1 gap-4">
+            {
+              !sessionData && (
+                <div>
+                  <h1 className="text-2xl font-bold text-center text-white">Inicia sesion</h1>
+                </div>
+              )
+            }
             <div
               className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
             >
