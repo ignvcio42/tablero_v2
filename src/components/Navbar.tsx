@@ -7,6 +7,11 @@ export default function Navbar() {
     const { data: sessionData } = useSession();
     const [opened, setOpened] = useState(false);
 
+    const handleSignOut = async () => {
+        await signOut({ redirect: false });      
+        window.location.assign("/api/auth/federated-logout");
+      };
+
     return (
         <nav className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
             <Container size="lg" className="py-4">
@@ -31,7 +36,7 @@ export default function Navbar() {
                                 color="blue"
                                 radius="lg"
                                 className="bg-blue-700 hover:bg-blue-800 text-white"
-                                onClick={sessionData ? () => void signOut() : () => void signIn()}
+                                onClick={sessionData ? handleSignOut : () => void signIn()}
                             >
                                 {sessionData ? "Cerrar sesión" : "Iniciar sesión"}
                             </Button>

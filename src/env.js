@@ -30,6 +30,10 @@ export const env = createEnv({
     EMAIL_USER: z.string().optional(),   // si usas Gmail/Mailjet
     EMAIL_PASS: z.string().optional(),
     EMAIL_PORT: z.string().optional(),
+    COGNITO_CLIENT_ID: z.string(),
+    COGNITO_CLIENT_SECRET: z.string(),
+    COGNITO_ISSUER: z.string(),
+    COGNITO_HOSTED_UI_DOMAIN: z.string(),
 
   },
 
@@ -59,6 +63,10 @@ export const env = createEnv({
     EMAIL_USER: process.env.EMAIL_USER,
     EMAIL_PASS: process.env.EMAIL_API_KEY,
     EMAIL_PORT: process.env.EMAIL_PORT,
+    COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
+    COGNITO_CLIENT_SECRET: process.env.COGNITO_CLIENT_SECRET,
+    COGNITO_ISSUER: process.env.COGNITO_ISSUER,
+    COGNITO_HOSTED_UI_DOMAIN: process.env.COGNITO_HOSTED_UI_DOMAIN,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

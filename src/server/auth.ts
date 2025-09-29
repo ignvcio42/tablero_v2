@@ -8,6 +8,7 @@ import {
 import { type Adapter } from "next-auth/adapters";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
+import CognitoProvider from "next-auth/providers/cognito";
 
 
 import { env } from "~/env";
@@ -68,13 +69,21 @@ export const authOptions: NextAuthOptions = {
       from: process.env.EMAIL_FROM,                  // no-reply@pruebastestcostflow.store
       ...(process.env.NODE_ENV !== "production"
         ? {
-            // útil en dev si quieres ver el link en consola
-            sendVerificationRequest({ url, identifier }) {
-              console.log(`LOGIN LINK for ${identifier}: ${url}`);
-            },
-          }
+          // útil en dev si quieres ver el link en consola
+          sendVerificationRequest({ url, identifier }) {
+            console.log(`LOGIN LINK for ${identifier}: ${url}`);
+          },
+        }
         : {}),
     }),
+    CognitoProvider({
+      clientId: env.COGNITO_CLIENT_ID,
+      clientSecret: env.COGNITO_CLIENT_SECRET,
+      issuer: env.COGNITO_ISSUER, 
+      authorization: { params: { prompt: "login" } },
+    }),
+  // debug: process.env.NODE_ENV !== "production",
+
     /**
      * ...add more providers here.
      *
