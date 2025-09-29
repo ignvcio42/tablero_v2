@@ -9,6 +9,7 @@ import { type Adapter } from "next-auth/adapters";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 
+
 import { env } from "~/env";
 import { db } from "~/server/db";
 
@@ -56,17 +57,18 @@ export const authOptions: NextAuthOptions = {
     }),
     EmailProvider({
       server: {
-        host: process.env.EMAIL_SERVER!,          // "in-v3.mailjet.com"
+        host: process.env.EMAIL_SERVER!,             // "smtp.resend.com"
         port: Number(process.env.EMAIL_PORT) || 587,
-        secure: false,                            // 587 = STARTTLS
+        secure: true,                               // 587 = STARTTLS; si usas 465, pon true
         auth: {
-          user: process.env.EMAIL_USER!,          // API KEY
-          pass: process.env.EMAIL_API_KEY!,          // SECRET KEY
+          user: process.env.EMAIL_USER!,             // "resend"
+          pass: process.env.EMAIL_API_KEY!,             // API key re_...
         },
       },
-      from: process.env.EMAIL_FROM,               // debe ser el sender verificado
+      from: process.env.EMAIL_FROM,                  // no-reply@pruebastestcostflow.store
       ...(process.env.NODE_ENV !== "production"
         ? {
+            // útil en dev si quieres ver el link en consola
             sendVerificationRequest({ url, identifier }) {
               console.log(`LOGIN LINK for ${identifier}: ${url}`);
             },
